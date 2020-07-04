@@ -4,6 +4,10 @@ import re
 import json
 
 
+def my_function(f):
+    print(2989)
+
+
 def GET(url):
     headers = {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
@@ -31,8 +35,8 @@ def income_statement(ticker, period_type):
         if t['flag'] == 'USA':
             usa_ticker_href = t['link']
             pair_id = str(t['pairId'])
-    print(usa_ticker_href)
-    print(pair_id)
+    #print(usa_ticker_href)
+    #print(pair_id)
     res = GET(investing_url+usa_ticker_href+'-income-statement')
     res = GET(investing_url+'/instruments/Financials/changereporttypeajax?action=change_report_type&pair_ID=' +
               pair_id+'&report_type=INC&period_type='+period_type)
@@ -41,7 +45,6 @@ def income_statement(ticker, period_type):
 
 def parse(report):
     soup = bs4.BeautifulSoup(report.text, features="html5lib")
-
     t = soup.find('table')
     rows_tags = t.find_all(lambda tag: tag.name == 'td' and not tag.attrs)
     d = {}
@@ -59,4 +62,16 @@ def parse(report):
 
 
 report = income_statement('AAPL', 'Annual')
-income_statement_dict = parse(report)
+isd = parse(report)
+
+
+def relative(row):
+    return [float(row[i]) / float(row[i+1]) for i in range(len(row)-1)]
+
+#print(relative(isd['Revenue']))
+
+
+for t in ['AAPL', 'MCD', 'ACN', 'V', 'TXN']:
+    print(t)
+    isd = parse(income_statement(t, 'Annual'))
+    print(relative(isd['Revenue']))
